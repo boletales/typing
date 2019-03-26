@@ -47,23 +47,20 @@
         }
 
         function strToKouho(string){
-            let search=[[string,null]];
+            let searchCount=0;
+            //[入力後のカナ,次出力として許容される文字列]
+            let search=[[string,""]];
             let kouhos=[];
             while(search.length>0){
                 let searching=search.pop();
-                if(searching[1]==null){
-                    var ato="";
-                }else{
-                    var ato=searching[1];
-                }
-                let kouho=romanTable.filter(r=>(searching[0].endsWith(r[1]) && ato.startsWith(r[2])));
-                kouho.forEach(k => {
-                    let newstr=searching[0].slice(0,-k[1].length);
-                    if(search.findIndex(s=>(s[0]==newstr && s[1]==k[0]))==-1){
-                        kouhos.push([newstr,searching[0],k[0],k[2]]);
-                        search.unshift([newstr,k[0]]);
+                let kouho=romanTable.filter(r=>(searching[0].endsWith(r[1])&&searching[1].startsWith(r[2])));
+                kouho.forEach(k=>{
+                    let newSearch=[searching[0].slice(0,-k[1].length),k[0]];
+                    kouhos.push([newSearch[0],searching[0],k[0],k[2]]);
+                    if( search.findIndex( s=>(s[0]==newSearch[0]&&s[1]==newSearch[1]) ) == -1){
+                        search.unshift(newSearch);
                     }
-                });
+                })
             }
             return kouhos;
         }
@@ -86,15 +83,14 @@
         }
         var goalKanji,goal,kouhos,kanamachi,req,kana,romans;
         function r(char){
-            let nowKouho=kouhos.filter(k=>(kana==k[0] && k[2].startsWith(kanamachi) && k[2].startsWith(req)));
-            if(nowKouho.findIndex(k=>(kana==k[0] && k[2].startsWith(kanamachi+char)))!=-1){
+            let nowKouho=kouhos.filter(k=>(kana==k[0] && k[2].startsWith(kanamachi+char)));
+            if(nowKouho.length>0){
                 kanamachi+=char;
                 romans+=char;
-                if(nowKouho.findIndex(k=>k[2]!=kanamachi)==-1){
-                    let k=nowKouho.find(k=>k[2]==kanamachi);
-                    kana=k[1];
-                    req=k[3];
-                    kanamachi="";
+                let input=nowKouho.find(k=>k[2]==kanamachi);
+                if(input!=undefined){
+                    kana=input[1];
+                    kanamachi=input[3];
                     if(kana==goal){
                         reset();
                     }
@@ -116,15 +112,15 @@
         function getYosoku(){
             let _romans="";
             let _kana=kana;
-            let _req=req;
-            let _nowkouho=kouhos.filter(k=>(_kana==k[0] && k[2].startsWith(kanamachi) && k[2].startsWith(_req)));
+            let _machi=kanamachi;
+            let _nowkouho;
             while(_kana!=goal){
-                _romans+=_nowkouho[0][2];
+                _nowkouho=kouhos.filter(k=>(_kana==k[0]& k[2].startsWith(_machi)));
+                _romans+=_nowkouho[0][2].substr(_machi.length);
                 _kana=_nowkouho[0][1];
-                _req=_nowkouho[0][3];
-                _nowkouho=kouhos.filter(k=>(_kana==k[0]& k[2].startsWith(_req)));
+                _machi=_nowkouho[0][3];
             }
-            return _romans.slice(kanamachi.length);
+            return _romans;
         }
     </script>
 </body>
