@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+</head>
+<body>
+    <p id="p"></p>
+    <script src="r.js"></script>
+    <script>
+        let p=document.getElementById("p");
+        document.onkeydown=onkey;
+        
+        function onkey(e){
+	        var atoz="abcdefghijklmnopqrstuvwxyz";
+            let code=e.keyCode;
+            if (code>=65 && code<=90){// a~z
+                var char=atoz.substr(code-65,1);
+                r(char);
+            }else if (code>=48 && code<=57){// 0~9
+                var char=code-48;
+                r(char);
+            }else if (code==173){
+                r("-");
+            }else if (code==8){
+                r("BS");
+            }
+            console.log(code);
+        }
+
+        function r(char){
+            console.log(henkanMati+","+char);
+            if(char=="BS"){
+                if(henkanMati==""){
+                    sumi=sumi.slice(0,-1);
+                }else{
+                    henkanMati=henkanMati.slice(0,-1);
+                }
+                p.innerText=sumi+henkanMati;
+                return;
+            }
+
+            henkanMati+=char;
+            let possible=roma.filter(r=>(r[0]+r[2]).startsWith(henkanMati));
+            let henkan=possible.filter(r=>henkanMati.startsWith(r[0]+r[2]));
+            if(possible.length==0){
+                sumi+=henkanMati;
+                henkanMati="";
+            }else if(henkan.length>0){
+                sumi+=henkan[0][1];
+                henkanMati=henkanMati.substr(henkan[0][0].length);
+            }
+            p.innerText=sumi+henkanMati;
+        }
+
+        let henkanMati="";
+        let sumi="";
+    </script>
+</body>
+</html>

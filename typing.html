@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <style>
+        #roman{
+            font-size: 60%;
+        }
+        .a{
+            color: black;
+        }
+        .b{
+            color: gray;
+        }
+        #contents{
+            text-align: center;
+            font-size: 300%;
+        }
+    </style>
+</head>
+<body>
+    <div id="contents">
+        <p id="kanji"></p>
+        <p id="kana"><span id="kana_a" class="a"></span><span id="kana_b" class="b"></span></p>
+        <p id="roman"><span id="roman_a" class="a"></span><span id="roman_b" class="b"></span></p>
+    </div>
+    <script src="r.js"></script>
+    <script src="texts.js"></script>
+    <script>
+        let p=document.getElementById("p");
+        document.onkeydown=onkey;
+        
+        function onkey(e){
+	        var atoz="abcdefghijklmnopqrstuvwxyz";
+            let code=e.keyCode;
+            if (code>=65 && code<=90){// a~z
+                var char=atoz.substr(code-65,1);
+                r(char);
+            }else if (code>=48 && code<=57){// 0~9
+                var char=code-48;
+                r(char);
+            }else if (code==173){
+                r("-");
+            }
+        }
+
+        function strToKouho(string){
+            let search=[[string,null]];
+            let kouhos=[];
+            while(search.length>0){
+                let searching=search.pop();
+                if(searching[1]==null){
+                    var ato="";
+                }else{
+                    var ato=searching[1];
+                }
+                let kouho=romanTable.filter(r=>(searching[0].endsWith(r[1]) && ato.startsWith(r[2])));
+                kouho.forEach(k => {
+                    let newstr=searching[0].slice(0,-k[1].length);
+                    if(search.findIndex(s=>(s[0]==newstr && s[1]==k[0]))==-1){
+                        kouhos.push([newstr,searching[0],k[0],k[2]]);
+                        search.unshift([newstr,k[0]]);
+                    }
+                });
+            }
+            return kouhos;
+        }
+        var domKanji=document.getElementById("kanji");
+        var domKanaA=document.getElementById("kana_a");
+        var domKanaB=document.getElementById("kana_b");
+        var domRomanA=document.getElementById("roman_a");
+        var domRomanB=document.getElementById("roman_b");
+
+        function reset(){
+            let next=texts[Math.floor(Math.random()*texts.length)];
+            goalKanji=next[0];
+            goal=next[1];
+            kouhos=strToKouho(goal);
+            kanamachi="";
+            req="";
+            kana="";
+            romans="";
+            refresh();
+        }
+        var goalKanji,goal,kouhos,kanamachi,req,kana,romans;
+        function r(char){
+            let nowKouho=kouhos.filter(k=>(kana==k[0] && k[2].startsWith(kanamachi) && k[2].startsWith(req)));
+            if(nowKouho.findIndex(k=>(kana==k[0] && k[2].startsWith(kanamachi+char)))!=-1){
+                kanamachi+=char;
+                romans+=char;
+                if(nowKouho.findIndex(k=>k[2]==kanamachi)!=-1){
+                    let k=nowKouho.find(k=>k[2]==kanamachi);
+                    kana=k[1];
+                    req=k[3];
+                    kanamachi="";
+                    if(kana==goal){
+                        reset();
+                    }
+                }
+            }else{
+            }
+            refresh();
+        }
+        reset();
+
+        function refresh(){
+            domKanji.innerText=goalKanji;
+            domKanaA.innerText=kana;
+            domKanaB.innerText=goal.slice(kana.length);
+            domRomanA.innerText=romans;
+            domRomanB.innerText=getYosoku();
+        }
+
+        function getYosoku(){
+            let _romans="";
+            let _kana=kana;
+            let _req=req;
+            let _nowkouho=kouhos.filter(k=>(_kana==k[0] && k[2].startsWith(kanamachi) && k[2].startsWith(_req)));
+            while(_kana!=goal){
+                _romans+=_nowkouho[0][2];
+                _kana=_nowkouho[0][1];
+                _req=_nowkouho[0][3];
+                _nowkouho=kouhos.filter(k=>(_kana==k[0]& k[2].startsWith(_req)));
+            }
+            return _romans.slice(kanamachi.length);
+        }
+    </script>
+</body>
+</html>
