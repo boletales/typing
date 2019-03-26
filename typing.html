@@ -90,7 +90,7 @@
             if(nowKouho.findIndex(k=>(kana==k[0] && k[2].startsWith(kanamachi+char)))!=-1){
                 kanamachi+=char;
                 romans+=char;
-                if(nowKouho.findIndex(k=>k[2]==kanamachi)!=-1){
+                if(nowKouho.findIndex(k=>k[2]!=kanamachi)==-1){
                     let k=nowKouho.find(k=>k[2]==kanamachi);
                     kana=k[1];
                     req=k[3];

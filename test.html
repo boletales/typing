@@ -26,7 +26,6 @@
             }else if (code==8){
                 r("BS");
             }
-            console.log(code);
         }
 
         function r(char){
@@ -42,14 +41,14 @@
             }
 
             henkanMati+=char;
-            let possible=roma.filter(r=>(r[0]+r[2]).startsWith(henkanMati));
-            let henkan=possible.filter(r=>henkanMati.startsWith(r[0]+r[2]));
+            let possible=romanTable.filter(r=>(r[0]).startsWith(henkanMati));
+            let henkan=possible.filter(r=>henkanMati==r[0]);
             if(possible.length==0){
-                sumi+=henkanMati;
-                henkanMati="";
+                sumi+=henkanMati.slice(0,-1);
+                henkanMati=char;
             }else if(henkan.length>0){
                 sumi+=henkan[0][1];
-                henkanMati=henkanMati.substr(henkan[0][0].length);
+                henkanMati=henkan[0][2];
             }
             p.innerText=sumi+henkanMati;
         }
