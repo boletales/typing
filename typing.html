@@ -18,6 +18,10 @@
             text-align: center;
             font-size: 300%;
         }
+        .data{
+            font-size: 60%;
+            color:#005;
+        }
     </style>
 </head>
 <body>
@@ -25,24 +29,28 @@
         <p id="kanji"></p>
         <p id="kana"><span id="kana_a" class="a"></span><span id="kana_b" class="b"></span></p>
         <p id="roman"><span id="roman_a" class="a"></span><span id="roman_b" class="b"></span></p>
+        <hr>
+        <p id="data0" class="data"></p>
     </div>
-    <script src="r.js"></script>
+    <script src="roman.js"></script>
     <script src="texts.js"></script>
+    <script src="sound.js"></script>
     <script>
         let p=document.getElementById("p");
         document.onkeydown=onkey;
+        let audioNext = new Audio("./orb.ogg");
         
         function onkey(e){
 	        var atoz="abcdefghijklmnopqrstuvwxyz";
             let code=e.keyCode;
             if (code>=65 && code<=90){// a~z
                 var char=atoz.substr(code-65,1);
-                r(char);
+                handleInput(char);
             }else if (code>=48 && code<=57){// 0~9
                 var char=code-48;
-                r(char);
+                handleInput(char);
             }else if (code==173){
-                r("-");
+                handleInput("-");
             }
         }
 
@@ -69,6 +77,7 @@
         var domKanaB=document.getElementById("kana_b");
         var domRomanA=document.getElementById("roman_a");
         var domRomanB=document.getElementById("roman_b");
+        let domData0=document.getElementById("data0");
 
         function reset(){
             let next=texts[Math.floor(Math.random()*texts.length)];
@@ -76,31 +85,64 @@
             goal=next[1];
             kouhos=strToKouho(goal);
             kanamachi="";
-            req="";
             kana="";
             romans="";
             refresh();
         }
-        var goalKanji,goal,kouhos,kanamachi,req,kana,romans;
-        function r(char){
+        const history=10;
+        let goalKanji="";//課題の漢字表記
+        let goal     ="";//課題の読み仮名
+        let kanamachi="";
+        let kana     ="";
+        let romans   ="";
+        let kouhos   =[];//現在の文字の入力候補
+        let countInput =[0];//全打鍵数記録
+        let countRight =[0];//正打鍵数記録
+        let countTime  =[];//時間記録
+        let timeStart;//今の単語の入力開始時
+        function handleInput(char){
             let nowKouho=kouhos.filter(k=>(kana==k[0] && k[2].startsWith(kanamachi+char)));
             if(nowKouho.length>0){
+                playBase64(base64OK);
+                if(countRight[0]==0)timeStart=(new Date()).getTime();
+                countInput[0]++;
+                countRight[0]++;
                 kanamachi+=char;
                 romans+=char;
                 let input=nowKouho.find(k=>k[2]==kanamachi);
-                if(input!=undefined){
+                if(input!=undefined){//ひらがなが完成したら
                     kana=input[1];
                     kanamachi=input[3];
                     if(kana==goal){
+                        countTime.unshift((new Date()).getTime()-timeStart);
+                        if(countTime.length>history)countTime.pop();
+                        showData();
+
+                        countInput.unshift(0);
+                        countRight.unshift(0);
+                        if(countInput.length>history)countInput.pop();
+                        if(countRight.length>history)countRight.pop();
+                        audioNext.play();
                         reset();
                     }
                 }
             }else{
+                playBase64(base64NG);
+                countInput[0]++;
             }
             refresh();
         }
         reset();
-
+        function showData(){
+            let sumInput=countInput.reduce((a,c)=>a+c,0);
+            let sumRight=countRight.reduce((a,c)=>a+c,0);
+            let sumTime=countTime.reduce((a,c)=>a+c,0);
+            domData0.innerHTML=
+                "▼直近"+history+"単語の平均▼<br>"+
+                (sumRight/sumTime*1000).toFixed(2)+" keys/s<br>"+
+                //sumRight+"/"+sumInput+"<br>"+
+                (sumRight/sumInput*100).toFixed(1)+"%";
+        }
         function refresh(){
             domKanji.innerText=goalKanji;
             domKanaA.innerText=kana;
