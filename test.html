@@ -15,6 +15,7 @@
         function onkey(e){
 	        var atoz="abcdefghijklmnopqrstuvwxyz";
             let code=e.keyCode;
+            console.log(code);
             if (code>=65 && code<=90){// a~z
                 var char=atoz.substr(code-65,1);
                 handleInput(char);

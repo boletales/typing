@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Page Title</title>
+    <title>タイピング</title>
     <style>
         #roman{
             font-size: 60%;
@@ -18,8 +18,8 @@
             text-align: center;
             font-size: 300%;
         }
-        .data{
-            font-size: 60%;
+        #datas{
+            font-size: 50%;
             color:#005;
         }
     </style>
@@ -29,16 +29,34 @@
         <p id="kanji"></p>
         <p id="kana"><span id="kana_a" class="a"></span><span id="kana_b" class="b"></span></p>
         <p id="roman"><span id="roman_a" class="a"></span><span id="roman_b" class="b"></span></p>
-        <hr>
-        <p id="data0" class="data"></p>
+        <!--button onclick="switchShowingData()">▼データ表示切り替え▼</button-->
+        <div id="datas">
+            <br>
+            <br>
+            <hr>
+            <p id="data0" class="data">ctrlで表示切り替え</p>
+        </div>
     </div>
     <script src="roman.js"></script>
     <script src="texts.js"></script>
     <script src="sound.js"></script>
     <script>
+        const history=10;
+        const theme=1;
+
+        function switchShowingData(){
+            document.getElementById('datas').hidden=!document.getElementById('datas').hidden;
+        }
         let p=document.getElementById("p");
+        var domKanji=document.getElementById("kanji");
+        var domKanaA=document.getElementById("kana_a");
+        var domKanaB=document.getElementById("kana_b");
+        var domRomanA=document.getElementById("roman_a");
+        var domRomanB=document.getElementById("roman_b");
+        let domData0=document.getElementById("data0");
+
         document.onkeydown=onkey;
-        let audioNext = new Audio("./orb.ogg");
+        //let audioNext = new Audio("./orb.ogg");
         
         function onkey(e){
 	        var atoz="abcdefghijklmnopqrstuvwxyz";
@@ -52,6 +70,8 @@
             }else if (code==173){
                 handleInput("-");
             }
+
+            if(code==17)switchShowingData();//ctrlでデータ表示切り替え
         }
 
         function strToKouho(string){
@@ -72,24 +92,8 @@
             }
             return kouhos;
         }
-        var domKanji=document.getElementById("kanji");
-        var domKanaA=document.getElementById("kana_a");
-        var domKanaB=document.getElementById("kana_b");
-        var domRomanA=document.getElementById("roman_a");
-        var domRomanB=document.getElementById("roman_b");
-        let domData0=document.getElementById("data0");
+        
 
-        function reset(){
-            let next=texts[Math.floor(Math.random()*texts.length)];
-            goalKanji=next[0];
-            goal=next[1];
-            kouhos=strToKouho(goal);
-            kanamachi="";
-            kana="";
-            romans="";
-            refresh();
-        }
-        const history=10;
         let goalKanji="";//課題の漢字表記
         let goal     ="";//課題の読み仮名
         let kanamachi="";
@@ -122,7 +126,7 @@
                         countRight.unshift(0);
                         if(countInput.length>history)countInput.pop();
                         if(countRight.length>history)countRight.pop();
-                        audioNext.play();
+                        playBase64(base64PAGE);
                         reset();
                     }
                 }
@@ -133,15 +137,19 @@
             refresh();
         }
         reset();
-        function showData(){
-            let sumInput=countInput.reduce((a,c)=>a+c,0);
-            let sumRight=countRight.reduce((a,c)=>a+c,0);
-            let sumTime=countTime.reduce((a,c)=>a+c,0);
-            domData0.innerHTML=
-                "▼直近"+history+"単語の平均▼<br>"+
-                (sumRight/sumTime*1000).toFixed(2)+" keys/s<br>"+
-                //sumRight+"/"+sumInput+"<br>"+
-                (sumRight/sumInput*100).toFixed(1)+"%";
+
+        function reset(){
+            let next;
+            while(next==undefined || (texts[theme].length>1 && next[0]==goalKanji)){
+                next=texts[theme][Math.floor(Math.random()*texts[theme].length)];
+            }
+            goalKanji=next[0];
+            goal=next[1];
+            kouhos=strToKouho(goal);
+            kanamachi="";
+            kana="";
+            romans="";
+            refresh();
         }
         function refresh(){
             domKanji.innerText=goalKanji;
@@ -149,6 +157,17 @@
             domKanaB.innerText=goal.slice(kana.length);
             domRomanA.innerText=romans;
             domRomanB.innerText=getYosoku();
+        }
+
+        function showData(){
+            let sumInput=countInput.reduce((a,c)=>a+c,0);
+            let sumRight=countRight.reduce((a,c)=>a+c,0);
+            let sumTime=countTime.reduce((a,c)=>a+c,0);
+            domData0.innerHTML=
+                "▼直近"+countInput.length+"単語の平均▼<br>"+
+                (sumRight/sumTime*1000).toFixed(2)+" keys/s<br>"+
+                //sumRight+"/"+sumInput+"<br>"+
+                (sumRight/sumInput*100).toFixed(1)+"%";
         }
 
         function getYosoku(){
