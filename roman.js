@@ -1,3 +1,5 @@
+//形式:["アルファベット","かな","次入力"]
+//google日本語入力のアルゴリズム借りました
 let romanTable=[
 	["a","あ",""],
 	["i","い",""],
@@ -239,3 +241,9 @@ let romanTable=[
 	["?","?",""],
 	["!","!",""]
 ]
+let atoz="abcdefghijklmnopqrstuvwxyz";
+Array(26).forEach((c,i)=>{
+	let char=atoz[i];
+	romanTable.push([char,char,""]);
+	romanTable.push([char,char.toUpperCase(),""]);
+});

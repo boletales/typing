@@ -40,9 +40,10 @@
     <script src="roman.js"></script>
     <script src="texts.js"></script>
     <script src="sound.js"></script>
+    <script src="game.js"></script>
     <script>
         const history=10;
-        const theme=1;
+        var theme=1;
 
         function switchShowingData(){
             document.getElementById('datas').hidden=!document.getElementById('datas').hidden;
@@ -58,105 +59,42 @@
         document.onkeydown=onkey;
         //let audioNext = new Audio("./orb.ogg");
         
-        function onkey(e){
-	        var atoz="abcdefghijklmnopqrstuvwxyz";
-            let code=e.keyCode;
-            if (code>=65 && code<=90){// a~z
-                var char=atoz.substr(code-65,1);
-                handleInput(char);
-            }else if (code>=48 && code<=57){// 0~9
-                var char=code-48;
-                handleInput(char);
-            }else if (code==173){
-                handleInput("-");
-            }
-
-            if(code==17)switchShowingData();//ctrlでデータ表示切り替え
-        }
-
-        function strToKouho(string){
-            let searchCount=0;
-            //[入力後のカナ,次出力として許容される文字列]
-            let search=[[string,""]];
-            let kouhos=[];
-            while(search.length>0){
-                let searching=search.pop();
-                let kouho=romanTable.filter(r=>(searching[0].endsWith(r[1])&&searching[1].startsWith(r[2])));
-                kouho.forEach(k=>{
-                    let newSearch=[searching[0].slice(0,-k[1].length),k[0]];
-                    kouhos.push([newSearch[0],searching[0],k[0],k[2]]);
-                    if( search.findIndex( s=>(s[0]==newSearch[0]&&s[1]==newSearch[1]) ) == -1){
-                        search.unshift(newSearch);
-                    }
-                })
-            }
-            return kouhos;
-        }
-        
-
-        let goalKanji="";//課題の漢字表記
-        let goal     ="";//課題の読み仮名
-        let kanamachi="";
-        let kana     ="";
-        let romans   ="";
-        let kouhos   =[];//現在の文字の入力候補
         let countInput =[0];//全打鍵数記録
         let countRight =[0];//正打鍵数記録
         let countTime  =[];//時間記録
         let timeStart;//今の単語の入力開始時
-        function handleInput(char){
-            let nowKouho=kouhos.filter(k=>(kana==k[0] && k[2].startsWith(kanamachi+char)));
-            if(nowKouho.length>0){
-                playBase64(base64OK);
-                if(countRight[0]==0)timeStart=(new Date()).getTime();
-                countInput[0]++;
-                countRight[0]++;
-                kanamachi+=char;
-                romans+=char;
-                let input=nowKouho.find(k=>k[2]==kanamachi);
-                if(input!=undefined){//ひらがなが完成したら
-                    kana=input[1];
-                    kanamachi=input[3];
-                    if(kana==goal){
-                        countTime.unshift((new Date()).getTime()-timeStart);
-                        if(countTime.length>history)countTime.pop();
-                        showData();
 
-                        countInput.unshift(0);
-                        countRight.unshift(0);
-                        if(countInput.length>history)countInput.pop();
-                        if(countRight.length>history)countRight.pop();
-                        playBase64(base64PAGE);
-                        reset();
-                    }
-                }
-            }else{
-                playBase64(base64NG);
-                countInput[0]++;
-            }
-            refresh();
-        }
         reset();
 
-        function reset(){
-            let next;
-            while(next==undefined || (texts[theme].length>1 && next[0]==goalKanji)){
-                next=texts[theme][Math.floor(Math.random()*texts[theme].length)];
-            }
-            goalKanji=next[0];
-            goal=next[1];
-            kouhos=strToKouho(goal);
-            kanamachi="";
-            kana="";
-            romans="";
-            refresh();
+        function whendone(){
+            countTime.unshift((new Date()).getTime()-timeStart);
+            if(countTime.length>history)countTime.pop();
+
+            countInput.unshift(0);
+            countRight.unshift(0);
+            if(countInput.length>history)countInput.pop();
+            if(countRight.length>history)countRight.pop();
+            playBase64(base64PAGE);
         }
+
+        function whenright(){
+            playBase64(base64OK);
+            if(countRight[0]==0)timeStart=(new Date()).getTime();
+            countInput[0]++;
+            countRight[0]++;
+        }
+        function whenwrong(){
+            countInput[0]++;
+            playBase64(base64NG);
+        }
+
         function refresh(){
             domKanji.innerText=goalKanji;
             domKanaA.innerText=kana;
             domKanaB.innerText=goal.slice(kana.length);
             domRomanA.innerText=romans;
             domRomanB.innerText=getYosoku();
+            showData();
         }
 
         function showData(){
@@ -170,19 +108,6 @@
                 (sumRight/sumInput*100).toFixed(1)+"%";
         }
 
-        function getYosoku(){
-            let _romans="";
-            let _kana=kana;
-            let _machi=kanamachi;
-            let _nowkouho;
-            while(_kana!=goal){
-                _nowkouho=kouhos.filter(k=>(_kana==k[0]& k[2].startsWith(_machi)));
-                _romans+=_nowkouho[0][2].substr(_machi.length);
-                _kana=_nowkouho[0][1];
-                _machi=_nowkouho[0][3];
-            }
-            return _romans;
-        }
     </script>
 </body>
 </html>
