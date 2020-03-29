@@ -239,10 +239,12 @@ let romanTable=[
 	["co","こ",""],
 	["-","ー",""],
 	["?","?",""],
-	["!","!",""]
+	["!","!",""],
+	["?","？",""],
+	["!","！",""]
 ]
 let atoz="abcdefghijklmnopqrstuvwxyz";
-Array(26).forEach((c,i)=>{
+Array(26).fill(0).forEach((c,i)=>{
 	let char=atoz[i];
 	romanTable.push([char,char,""]);
 	romanTable.push([char,char.toUpperCase(),""]);

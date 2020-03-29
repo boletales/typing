@@ -12,7 +12,7 @@
             color: black;
         }
         .b{
-            color: gray;
+            color: #aaa;
         }
         #contents{
             text-align: center;
@@ -40,10 +40,9 @@
     <script src="roman.js"></script>
     <script src="texts.js"></script>
     <script src="sound.js"></script>
-    <script src="game.js"></script>
     <script>
+    
         const history=10;
-        var theme=1;
 
         function switchShowingData(){
             document.getElementById('datas').hidden=!document.getElementById('datas').hidden;
@@ -56,15 +55,12 @@
         var domRomanB=document.getElementById("roman_b");
         let domData0=document.getElementById("data0");
 
-        document.onkeydown=onkey;
         //let audioNext = new Audio("./orb.ogg");
-        
+
         let countInput =[0];//全打鍵数記録
         let countRight =[0];//正打鍵数記録
         let countTime  =[];//時間記録
         let timeStart;//今の単語の入力開始時
-
-        reset();
 
         function whendone(){
             countTime.unshift((new Date()).getTime()-timeStart);
@@ -107,6 +103,12 @@
                 //sumRight+"/"+sumInput+"<br>"+
                 (sumRight/sumInput*100).toFixed(1)+"%";
         }
+    </script>
+    <script src="game.js"></script>
+    <script>
+
+        document.onkeydown=onkey;
+        reset();
 
     </script>
 </body>

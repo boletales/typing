@@ -4,7 +4,7 @@ let kanamachi="";
 let kana     ="";
 let romans   ="";
 let kouhos   =[];//現在の文字の入力候補
-
+let theme=1;
         
 function onkey(e){
     var atoz="abcdefghijklmnopqrstuvwxyz";
