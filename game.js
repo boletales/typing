@@ -16,6 +16,10 @@ function onkey(e){
         handleInput(char);
     }else if (code==173){
         handleInput("-");
+    }else if (code==109){
+        handleInput("-");
+    }else if (code==189){
+        handleInput("-");
     }else if (code==190){
         handleInput(".");
     }else if (code==188){

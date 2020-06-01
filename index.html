@@ -64,6 +64,7 @@
 
         function whendone(){
             countTime.unshift((new Date()).getTime()-timeStart);
+            timeStart=(new Date()).getTime();
             if(countTime.length>history)countTime.pop();
 
             countInput.unshift(0);
@@ -96,7 +97,7 @@
         function showData(){
             let sumInput=countInput.reduce((a,c)=>a+c,0);
             let sumRight=countRight.reduce((a,c)=>a+c,0);
-            let sumTime=countTime.reduce((a,c)=>a+c,0);
+            let sumTime=countTime.reduce((a,c)=>a+c,0)+((new Date()).getTime()-timeStart);
             domData0.innerHTML=
                 "▼直近"+countInput.length+"単語の平均▼<br>"+
                 (sumRight/sumTime*1000).toFixed(2)+" keys/s<br>"+
