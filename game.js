@@ -23,7 +23,7 @@ function onkey(e){
     }else if (code==190){
         handleInput(".");
     }else if (code==188){
-        handleInput(".");
+        handleInput(",");
     }
 
     if(code==17)switchShowingData();//ctrlでデータ表示切り替え
