@@ -39,9 +39,31 @@
     </div>
     <script src="roman.js"></script>
     <script src="texts.js"></script>
-    <script src="sound.js"></script>
     <script>
-    
+        let context = new window.AudioContext();
+        let buffers = {};
+
+        function loadAudio(name,url){
+            let xhr = new XMLHttpRequest();
+            xhr.open("GET",url);
+            xhr.responseType="arraybuffer";
+            xhr.send();
+            xhr.onload = ()=>{
+                context.decodeAudioData(xhr.response,buf=>{
+                    buffers[name]=buf;
+                });
+            }
+        }
+
+        function playAudio(name){
+            if(name in buffers){
+                let source = context.createBufferSource();
+                source.buffer = buffers[name];
+                source.connect(context.destination);
+                source.start();
+            }
+        }
+
         const history=10;
 
         function switchShowingData(){
@@ -55,7 +77,9 @@
         var domRomanB=document.getElementById("roman_b");
         let domData0=document.getElementById("data0");
 
-        //let audioNext = new Audio("./orb.ogg");
+        loadAudio("miss","./miss4.mp3");
+        loadAudio("next","./page.mp3");
+        loadAudio("type","./type6.mp3");
 
         let countInput =[0];//全打鍵数記録
         let countRight =[0];//正打鍵数記録
@@ -71,18 +95,18 @@
             countRight.unshift(0);
             if(countInput.length>history)countInput.pop();
             if(countRight.length>history)countRight.pop();
-            playBase64(base64PAGE);
+            playAudio("next");
         }
 
         function whenright(){
-            playBase64(base64OK);
+            playAudio("type");
             if(countRight[0]==0)timeStart=(new Date()).getTime();
             countInput[0]++;
             countRight[0]++;
         }
         function whenwrong(){
             countInput[0]++;
-            playBase64(base64NG);
+            playAudio("miss");
         }
 
         function refresh(){

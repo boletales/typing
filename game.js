@@ -48,12 +48,19 @@ function handleInput(char){
     }
     refresh();
 }
+const _SEQ = false;
+let seqid=0;
 reset();
 
 function reset(){
     let next;
     while(next==undefined || (texts[theme].length>1 && next[0]==goalKanji)){
-        next=texts[theme][Math.floor(Math.random()*texts[theme].length)];
+        if(_SEQ){
+            next=texts[theme][seqid];
+            seqid=(seqid+1)%texts[theme].length;
+        }else{
+            next=texts[theme][Math.floor(Math.random()*texts[theme].length)];
+        }
     }
     goalKanji=next[0];
     goal=next[1];
