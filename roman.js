@@ -106,6 +106,11 @@ let romanTable=[
 	["chu","ちゅ",""],
 	["che","ちぇ",""],
 	["cho","ちょ",""],
+	["cya","ちゃ",""],
+	["cyi","ちぃ",""],
+	["cyu","ちゅ",""],
+	["cye","ちぇ",""],
+	["cyo","ちょ",""],
 	["kk","っ","k"],
 	["ss","っ","s"],
 	["tt","っ","t"],
@@ -250,8 +255,9 @@ let romanTable=[
 	[",","、",""]
 ]
 let atoz="abcdefghijklmnopqrstuvwxyz";
+let alphaTable=[];
 Array(26).fill(0).forEach((c,i)=>{
 	let char=atoz[i];
-	romanTable.push([char,char,""]);
-	romanTable.push([char,char.toUpperCase(),""]);
+	alphaTable.push([char,char,""]);
+	alphaTable.push([char,char.toUpperCase(),""]);
 });

@@ -4,31 +4,9 @@ let kanamachi="";
 let kana     ="";
 let romans   ="";
 let kouhos   =[];//現在の文字の入力候補
+let convTable= romanTable.concat(alphaTable);
         
-function onkey(e){
-    var atoz="abcdefghijklmnopqrstuvwxyz";
-    let code=e.keyCode;
-    if (code>=65 && code<=90){// a~z
-        var char=atoz.substr(code-65,1);
-        handleInput(char);
-    }else if (code>=48 && code<=57){// 0~9
-        var char=code-48;
-        handleInput(char);
-    }else if (code==173){
-        handleInput("-");
-    }else if (code==109){
-        handleInput("-");
-    }else if (code==189){
-        handleInput("-");
-    }else if (code==190){
-        handleInput(".");
-    }else if (code==188){
-        handleInput(",");
-    }
-
-    if(code==17)switchShowingData();//ctrlでデータ表示切り替え
-}
-function handleInput(char){
+function gameInput(char){
     let nowKouho=kouhos.filter(k=>(kana==k[0] && k[2].startsWith(kanamachi+char)));
     if(nowKouho.length>0){
         whenright();
@@ -39,8 +17,7 @@ function handleInput(char){
             kana=input[1];
             kanamachi=input[3];
             if(kana==goal){
-                whendone();
-                reset();
+                if(whendone())return;
             }
         }
     }else{
@@ -50,18 +27,20 @@ function handleInput(char){
 }
 const _SEQ = false;
 let seqid=0;
-reset();
+let tasks = [];
 
-function reset(){
-    let next;
-    while(next==undefined || (texts[theme].length>1 && next[0]==goalKanji)){
-        if(_SEQ){
-            next=texts[theme][seqid];
-            seqid=(seqid+1)%texts[theme].length;
-        }else{
-            next=texts[theme][Math.floor(Math.random()*texts[theme].length)];
-        }
+function shuffle(arr){
+    let tmp = arr.concat();
+    let rtn = [];
+    for(;tmp.length>0;){
+        rtn.push(tmp.splice(Math.floor(Math.random()*tmp.length),1)[0]);
     }
+    return rtn;
+}
+
+function resetPhrase(){
+    if(tasks.length==0) tasks=shuffle(texts[theme]);
+    let next=tasks.shift();
     goalKanji=next[0];
     goal=next[1];
     kouhos=strToKouho(goal);
@@ -81,7 +60,7 @@ function strToKouho(string){
     while(search.length>0){
         let searching=search.pop();
         //次の条件を満たすローマ字を探す:検索中の枝について、その枝のカナがそのローマ字で終わる かつ 次入力がその後のローマ字の先頭に一致
-        let kouho=romanTable.filter(r=>(searching[0].endsWith(r[1])&&searching[1].startsWith(r[2])));
+        let kouho=convTable.filter(r=>(searching[0].endsWith(r[1])&&searching[1].startsWith(r[2])));
         kouho.forEach(k=>{
             kouhos.push([searching[0].slice(0,-k[1].length),searching[0],k[0],k[2]]);
             let newSearch=[searching[0].slice(0,-k[1].length),k[0]];

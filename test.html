@@ -24,7 +24,7 @@
                 handleInput(char);
             }else if (code==173){
                 handleInput("-");
-            }else if (code==8){
+            }else if (code==8 || code==46){
                 handleInput("BS");
             }
         }
@@ -43,7 +43,7 @@
 
             henkanMati+=char;
             let possible=romanTable.filter(r=>(r[0]).startsWith(henkanMati));
-            let henkan=possible.filter(r=>henkanMati==r[0]);
+            let henkan=possible.filter(r=>henkanMati==r[0]).filter(r=>r[1].toLowerCase()!=henkanMati);
             if(possible.length==0){
                 sumi+=henkanMati.slice(0,-1);
                 henkanMati=char;
