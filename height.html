@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>ALESS用タイピング課題</title>
+    <style>
+        #roman{
+            font-size: 60%;
+        }
+        .a{
+            color: black;
+        }
+        .b{
+            color: #aaa;
+        }
+        #contents{
+            text-align: center;
+            font-size: 300%;
+        }
+        #datas{
+            font-size: 50%;
+            color:#005;
+        }
+    </style>
+</head>
+<body>
+    <div id="contents">
+        <p id="kanji"></p>
+        <p id="kana"><span id="kana_a" class="a"></span><span id="kana_b" class="b"></span></p>
+        <p id="roman"><span id="roman_a" class="a"></span><span id="roman_b" class="b"></span></p>
+        <!--button onclick="switchShowingData()">▼データ表示切り替え▼</button-->
+        <div id="datas" hidden>
+            <br>
+            <br>
+            <hr>
+            <p id="data0" class="data">ctrlで表示切り替え</p>
+        </div>
+    </div>
+    <script src="roman.js"></script>
+    <script src="texts.js"></script>
+    <script>
+
+        function onkey(e){
+            var atoz="abcdefghijklmnopqrstuvwxyz";
+            let code=e.keyCode;
+            if (code>=65 && code<=90){// a~z
+                var char=atoz.substr(code-65,1);
+                handleInput(char);
+            }else if (code>=48 && code<=57){// 0~9
+                var char=code-48;
+                handleInput(char);
+            }else if (code==173){
+                handleInput("-");
+            }else if (code==109){
+                handleInput("-");
+            }else if (code==189){
+                handleInput("-");
+            }else if (code==190){
+                handleInput(".");
+            }else if (code==188){
+                handleInput(",");
+            }else if (code==32){
+                handleInput(" ");
+            }else if (code==13){
+                handleInput("ENTER");
+            }
+
+            //if(code==17)switchShowingData();//ctrlでデータ表示切り替え
+        }
+        function handleInput(char){
+            if(phase=="testing" || phase=="testing_last"){
+                gameInput(char);
+            }else if(phase=="waiting"){
+                if(char==" ")startGame();
+            }else if(phase=="tested"){
+                if(char=="ENTER")resetGame();
+            }
+        }
+
+        function shuffle(arr){
+            let tmp = arr.concat();
+            let rtn = [];
+            for(;tmp.length>0;){
+                rtn.push(tmp.splice(Math.floor(Math.random()*tmp.length),1)[0]);
+            }
+            return rtn;
+        }
+
+        function switchShowingData(){
+            document.getElementById('datas').hidden=!document.getElementById('datas').hidden;
+        }
+        let p=document.getElementById("p");
+        var domKanji=document.getElementById("kanji");
+        var domKanaA=document.getElementById("kana_a");
+        var domKanaB=document.getElementById("kana_b");
+        var domRomanA=document.getElementById("roman_a");
+        var domRomanB=document.getElementById("roman_b");
+        let domData0=document.getElementById("data0");
+
+
+        let countInput =[0];//全打鍵数記録
+        let countRight =[0];//正打鍵数記録
+        let countTime  =[];//時間記録
+        let timePhraseStart;//今の単語の入力開始時
+        let timeGameStart;//ゲームの開始時
+        let lastLogCode="(記録中)";
+        let lastkps="";
+        let seqHeights = shuffle([0,5,10]);
+        let testPhases = ["practice"].concat(seqHeights.map(h=>h+"cm"));
+        const testCount = testPhases.length;
+        let testtype="";
+        let testId="(ERROR)";
+        const gameLength = 60000;
+        const loggerurl = "https://script.google.com/macros/s/AKfycbzDkbTI6BStcQYuWk_3OE2r7SbDFzWGHV3DVDvMVv3Mzxig_JO_/exec";
+
+        {
+            let xhr = new XMLHttpRequest();
+            xhr.open("GET",loggerurl,true);
+            xhr.send();
+            xhr.onload = ()=>{
+                testId = xhr.responseText;
+            }
+        }
+        function startTest(){
+            phase = "tested";
+            domKanji.innerText="指示に従ってテスト（1分×4回）を受けてください";
+            domKanaA.innerText="";
+            domKanaB.innerText="[Enter]で開始";
+            domRomanA.innerHTML="<span style='color:red'>全行程が終了するまではこのタブを閉じないでください<br>キーボードを5cm･10cmかさ上げできるように書籍等を用意してください。</span>";
+            domRomanB.innerText="";
+        }
+        function resetGame(){
+            if(testPhases.length==0){
+                domKanji.innerText="全テストが終了しました";
+                domKanaA.innerText="";
+                domKanaB.innerText="ご協力ありがとうございました";
+                domRomanA.innerText="";
+                domRomanB.innerHTML="テストid「<span class='a'>"+testId+"</span>」を回答用紙に記入してください";
+                phase="end";
+                return;
+            }
+            phase="waiting";
+            testtype = testPhases.shift();
+            if(testtype=="practice"){
+                domKanji.innerText="テスト"+(testCount-testPhases.length)+"/"+testCount+"：練習";
+                domKanaA.innerText="キーボードの高さ：普段のまま";
+                domKanaB.innerText="";
+                domRomanA.innerText="";
+                domRomanB.innerText="[Space]でスタート";
+            }else{
+                domKanji.innerText="テスト"+(testCount-testPhases.length)+"/"+testCount+"：本番（"+testtype+"）";
+                domKanaA.innerText="キーボードの高さ：普段+"+testtype;
+                domKanaB.innerText="";
+                domRomanA.innerText="";
+                domRomanB.innerText="[Space]でスタート";
+            }
+        }
+
+        function startGame(){
+            lastLogCode="(記録中)";
+            phase="testing";
+            countInput =[0];//全打鍵数記録
+            countRight =[0];//正打鍵数記録
+            countTime  =[];//時間記録
+            timeGameStart = (new Date()).getTime();
+            setTimeout(finishGame,gameLength);
+            resetPhrase();
+        }
+
+        function finishGame(){
+            phase="testing_last";
+            countTime.push((new Date()).getTime()-timePhraseStart);
+            sendData(testtype,countInput,countRight,countTime);
+        }
+
+
+        function sendData(tt,ci,cr,ct){
+            let sumInput =countInput.reduce((a,c)=>a+c,0);
+            let sumRight =countRight.reduce((a,c)=>a+c,0);
+            let sumTarget=countRight.reduce((a,c)=>a+c-1,0);
+            let sumTime  =countTime.reduce((a,c)=>a+c,0);
+
+            let data = {
+                "date":new Date(),
+                "testid":testId,
+                "testtype":tt,
+                "totalinput":sumInput,
+                "totalright":sumRight,
+                "totalkps":sumRight/gameLength*1000,
+                "phrasetime":sumTime,
+                "phraseright":sumTarget,
+                "phrasekps":sumTarget/sumTime*1000,
+                "loginput":countInput,
+                "logright":countRight,
+                "logtime":countTime,
+            }
+            lastkps = "速度："+ (sumRight/gameLength*1000).toFixed(2)+"keys/s 　精度："+ (sumRight/sumInput*100).toFixed(1) +"%";
+
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST",loggerurl,true);
+            xhr.send(JSON.stringify(data));
+            xhr.onload = ()=>{
+                lastLogCode = xhr.responseText;
+                if(phase=="tested"){
+                    //domKanaB.innerHTML="記録idは「<span class='a'>"+lastLogCode+"</span>」です";
+                }
+            }
+        }
+
+        function last(arr){
+            return arr[arr.length-1];
+        }
+
+        function whendone(){
+            let now=(new Date()).getTime();
+            if(phase=="testing_last"){
+                phase="tested";
+                domKanji.innerText="測定完了：質問用紙に入力してください";
+                domKanaA.innerText="";
+                domKanaB.innerHTML="[Enter]で次のテスト";
+                domRomanA.innerText="";
+                domRomanB.innerText=lastkps;
+                return true;
+            }else{
+                countTime.push(now-timePhraseStart);
+                timePhraseStart=now;
+                countInput.push(0);
+                countRight.push(0);
+                resetPhrase();
+                return false;
+            }
+            //playAudio("next");
+        }
+
+        function whenright(){
+            //playAudio("type");
+            if(phase=="testing"){
+                if(countRight[countRight.length-1]==0)timePhraseStart=(new Date()).getTime();
+                countInput[countInput.length-1]++;
+                countRight[countRight.length-1]++;
+            }
+        }
+        function whenwrong(){
+            countInput[countInput.length-1]++;
+            //playAudio("miss");
+        }
+
+        function refresh(){
+            domKanji.innerText=goalKanji;
+            domKanaA.innerText=kana;
+            domKanaB.innerText=goal.slice(kana.length);
+            domRomanA.innerText=romans;
+            domRomanB.innerText=getYosoku();
+            showData();
+        }
+
+        function showData(){
+            if(phase=="testing"){
+                let sumInput =countInput.reduce((a,c)=>a+c,0);
+                let sumRight =countRight.reduce((a,c)=>a+c,0);
+                let sumTarget=countRight.reduce((a,c)=>a+c-1,0);
+                let sumTime  =countTime.reduce((a,c)=>a+c,0)+((new Date()).getTime()-timePhraseStart);
+                domData0.innerHTML=
+                    "▼直近"+countInput.length+"単語の平均▼<br>"+
+                    (sumTarget/sumTime*1000).toFixed(2)+" keys/s<br>"+
+                    //sumRight+"/"+sumInput+"<br>"+
+                    (sumRight/sumInput*100).toFixed(1)+"%";
+            }
+        }
+
+        function genCode(){
+            let chars="23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+            let length=8;
+            return Array(length).fill(null).map(()=>chars[Math.floor(Math.random()*chars.length)]).join("");
+        }
+
+    </script>
+    <script src="game.js"></script>
+    <script>
+        document.onkeydown=onkey;
+        startTest();
+
+    </script>
+</body>
+</html>
